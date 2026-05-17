@@ -1,5 +1,5 @@
 // Package fsx provides small filesystem helpers built only on the Go standard
-// library.
+// library and targets the latest Go toolchain version declared by the module.
 //
 // The package focuses on behavior that is useful across command-line tools and
 // services:
@@ -25,6 +25,7 @@
 //
 // # Dependencies
 //
-// fsx has zero third-party dependencies. It uses os, path/filepath, strings, and
-// other standard library packages.
+// fsx has zero third-party dependencies and no external module requirements. It
+// uses os, path/filepath, strings, and other standard library packages, and the
+// module currently targets Go 1.26.3.
 package fsx
