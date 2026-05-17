@@ -9,7 +9,7 @@
 
 `fsx` is a small Go package for filesystem helpers that sit just above `os` and `path/filepath`. It is designed for applications that need compact, easy-to-review helpers for expanded user paths, containment checks, file predicates, extension matching, and atomic writes.
 
-The package is standard-library-only and intentionally keeps one short package name instead of exposing broad `utils` packages.
+The package is standard-library-only, has no external module dependencies, and targets the latest Go toolchain version declared in `go.mod`. It intentionally keeps one short package name instead of exposing broad `utils` packages.
 
 ## Features
 
@@ -35,8 +35,8 @@ go get -u github.com/slashdevops/fsx
 
 ## Requirements
 
-- Go 1.26.3 or newer
-- No external Go modules
+- Go 1.26.3 or newer, matching the latest Go version declared by the module
+- No external Go modules or third-party dependencies
 
 ## Quick Start
 
