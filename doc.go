@@ -6,6 +6,7 @@
 //
 //   - expanding user-facing paths that start with ~ or contain $HOME
 //   - checking whether paths exist and whether they are regular files or directories
+//   - checking whether a regular file is marked readable or writable by its owner
 //   - confirming that a path remains inside a base directory after normalization
 //   - matching file extensions case-insensitively
 //   - writing files atomically by replacing the destination with a temporary file
@@ -15,6 +16,13 @@
 // [ExpandPath] expands a leading ~ with the current user's home directory and
 // replaces $HOME references with the HOME environment variable. If the home
 // directory cannot be determined, the original path is returned unchanged.
+//
+// # Permission Predicates
+//
+// [IsReadable] and [IsWritable] inspect the file mode, not the effective access of the calling process.
+// That is the portable answer the standard library can give: os.Stat exposes mode bits everywhere, while
+// asking "can I open this?" needs access(2) or an attempted open. A caller that must be certain should
+// open the file and handle the error — the answer can change between any check and the open regardless.
 //
 // # Atomic Writes
 //

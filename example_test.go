@@ -67,3 +67,36 @@ func ExampleWriteFileAtomic() {
 	// Output:
 	// ready
 }
+
+func ExampleIsWritable() {
+	dir, err := os.MkdirTemp("", "fsx-example-*")
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+	defer os.RemoveAll(dir)
+
+	writable := filepath.Join(dir, "writable.yaml")
+	if err := os.WriteFile(writable, []byte("a: 1\n"), 0o644); err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	readOnly := filepath.Join(dir, "readonly.yaml")
+	if err := os.WriteFile(readOnly, []byte("a: 1\n"), 0o400); err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(fsx.IsWritable(writable))
+	fmt.Println(fsx.IsWritable(readOnly))
+	fmt.Println(fsx.IsReadable(readOnly))
+
+	// Output:
+	// true
+	// false
+	// true
+}
