@@ -481,3 +481,141 @@ func BenchmarkWriteFileAtomic(b *testing.B) {
 		}
 	}
 }
+
+func TestIsReadable(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	readable := filepath.Join(tmpDir, "readable.txt")
+	if err := os.WriteFile(readable, []byte("content"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	unreadable := filepath.Join(tmpDir, "unreadable.txt")
+	if err := os.WriteFile(unreadable, []byte("content"), 0o200); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	tests := []struct {
+		name string
+		path string
+		want bool
+	}{
+		{
+			name: "empty path",
+			path: "",
+			want: false,
+		},
+		{
+			name: "readable file",
+			path: readable,
+			want: true,
+		},
+		{
+			name: "write-only file",
+			path: unreadable,
+			want: false,
+		},
+		{
+			name: "directory",
+			path: tmpDir,
+			want: false,
+		},
+		{
+			name: "missing path",
+			path: filepath.Join(tmpDir, "missing.txt"),
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsReadable(tt.path); got != tt.want {
+				t.Errorf("IsReadable(%q) = %t, want %t", tt.path, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsWritable(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	writable := filepath.Join(tmpDir, "writable.txt")
+	if err := os.WriteFile(writable, []byte("content"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	readOnly := filepath.Join(tmpDir, "readonly.txt")
+	if err := os.WriteFile(readOnly, []byte("content"), 0o400); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	tests := []struct {
+		name string
+		path string
+		want bool
+	}{
+		{
+			name: "empty path",
+			path: "",
+			want: false,
+		},
+		{
+			name: "writable file",
+			path: writable,
+			want: true,
+		},
+		{
+			name: "read-only file",
+			path: readOnly,
+			want: false,
+		},
+		{
+			name: "directory",
+			path: tmpDir,
+			want: false,
+		},
+		{
+			name: "missing path",
+			path: filepath.Join(tmpDir, "missing.txt"),
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsWritable(tt.path); got != tt.want {
+				t.Errorf("IsWritable(%q) = %t, want %t", tt.path, got, tt.want)
+			}
+		})
+	}
+}
+
+// Both predicates expand the path first, like every other function in the package.
+func TestIsReadableWritableExpandsHOME(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	path := filepath.Join(home, "config.yaml")
+	if err := os.WriteFile(path, []byte("content"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	if !IsReadable("$HOME/config.yaml") {
+		t.Error(`IsReadable("$HOME/config.yaml") = false, want true`)
+	}
+
+	if !IsWritable("~/config.yaml") {
+		t.Error(`IsWritable("~/config.yaml") = false, want true`)
+	}
+}
+
+func BenchmarkIsWritable(b *testing.B) {
+	path := filepath.Join(b.TempDir(), "data.txt")
+	if err := os.WriteFile(path, []byte("content"), 0o644); err != nil {
+		b.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	for b.Loop() {
+		IsWritable(path)
+	}
+}

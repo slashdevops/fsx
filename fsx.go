@@ -110,6 +110,56 @@ func IsWithin(base, target string) bool {
 	return rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
 
+// Owner permission bits inspected by [IsReadable] and [IsWritable].
+const (
+	ownerRead  = 0o400
+	ownerWrite = 0o200
+)
+
+// IsReadable reports whether path is a regular file whose owner-read bit is set.
+//
+// The check is on the file mode, not on the effective access of the calling process. That is the
+// portable answer the standard library can give: os.Stat exposes mode bits on every platform, while
+// asking "can *I* open this?" requires access(2) or an attempted open, neither of which is available
+// portably without cgo or a platform build tag.
+//
+// So this answers "is this file marked readable by its owner?" — which is what a tool validating a
+// configuration path it created wants to know. A caller that must be certain it can read the file should
+// open it and handle the error; a predicate cannot promise more than the mode bits it read, and the
+// answer can change between the check and the open regardless.
+//
+// An empty path, a missing path, and a path that is not a regular file all report false.
+func IsReadable(path string) bool {
+	return hasOwnerBits(path, ownerRead)
+}
+
+// IsWritable reports whether path is a regular file whose owner-write bit is set.
+//
+// The same mode-bit semantics as [IsReadable] apply, and for the same reason. The case this exists for is
+// a tool that will later rewrite a file it was handed — a configuration file, a lock file — and would
+// rather refuse at validation time than fail halfway through a write.
+//
+// An empty path, a missing path, and a path that is not a regular file all report false.
+func IsWritable(path string) bool {
+	return hasOwnerBits(path, ownerWrite)
+}
+
+// hasOwnerBits reports whether path is a regular file with all of the given mode bits set.
+func hasOwnerBits(path string, bits os.FileMode) bool {
+	if path == "" {
+		return false
+	}
+
+	info, err := os.Stat(ExpandPath(path))
+	if err != nil {
+		return false
+	}
+
+	mode := info.Mode()
+
+	return mode.IsRegular() && mode&bits == bits
+}
+
 // HasExtension reports whether path has one of the provided extensions.
 //
 // Extension matching is case-insensitive. Extensions may be passed with or
