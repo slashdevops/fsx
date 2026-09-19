@@ -2,7 +2,6 @@
 
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/slashdevops/fsx?style=plastic)
 [![Go Reference](https://pkg.go.dev/badge/github.com/slashdevops/fsx.svg)](https://pkg.go.dev/github.com/slashdevops/fsx)
-[![Go Report Card](https://goreportcard.com/badge/github.com/slashdevops/fsx)](https://goreportcard.com/report/github.com/slashdevops/fsx)
 [![license](https://img.shields.io/github/license/slashdevops/fsx.svg)](https://github.com/slashdevops/fsx/blob/main/LICENSE)
 [![Release](https://github.com/slashdevops/fsx/actions/workflows/release.yml/badge.svg)](https://github.com/slashdevops/fsx/actions/workflows/release.yml)
 
